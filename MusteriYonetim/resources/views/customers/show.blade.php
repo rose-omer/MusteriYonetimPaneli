@@ -6,46 +6,74 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{{ $customer->hizmet_alan_isyeri_unvani }}</h3>
+                <div class="p-6 text-gray-900 dark:text-gray-100 space-y-6">
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <p><span class="font-semibold">Firma No:</span> {{ $customer->firma_no }}</p>
-                            <p><span class="font-semibold">Görünür Ünvanı:</span> {{ $customer->gorunur_unvani }}</p>
-                            <p><span class="font-semibold">Faaliyet:</span> {{ $customer->faaliyet }}</p>
-                            <p><span class="font-semibold">Çalışan Sayısı:</span> {{ $customer->calisan_sayisi }}</p>
-                            <p><span class="font-semibold">Tehlike Sınıfı:</span> {{ $customer->tehlike_sinifi }}</p>
-                            <p><span class="font-semibold">Firma Sorumlusu:</span> {{ $customer->firma_sorumlusu }}</p>
-                            <p><span class="font-semibold">Telefon Numarası:</span> {{ $customer->telefon_numarasi }}</p>
-                            <p><span class="font-semibold">İl:</span> {{ $customer->il }}</p>
-                            <p><span class="font-semibold">Mahalle:</span> {{ $customer->mahalle }}</p>
-                            <p><span class="font-semibold">Konum URL:</span> <a href="{{ $customer->konum_url }}" target="_blank" class="text-blue-500 hover:underline">{{ $customer->konum_url }}</a></p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                        {{ $customer->hizmet_alan_isyeri_unvani ?: '-' }}
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {{-- Sol sütun --}}
+                        <div class="space-y-2">
+                            @foreach ([
+                                'Firma No' => $customer->firma_no,
+                                'Görünür Ünvanı' => $customer->gorunur_unvani,
+                                'Faaliyet' => $customer->faaliyet,
+                                'Çalışan Sayısı' => $customer->calisan_sayisi,
+                                'Tehlike Sınıfı' => $customer->tehlike_sinifi,
+                                'Firma Sorumlusu' => $customer->firma_sorumlusu,
+                                'Telefon Numarası' => $customer->telefon_numarasi,
+                                'İl' => $customer->il,
+                                'Mahalle' => $customer->mahalle,
+                            ] as $label => $value)
+                                <div class="border-b pb-1">
+                                    <span class="font-semibold">{{ $label }}:</span> {{ $value ?: '-' }}
+                                </div>
+                            @endforeach
+
+                            <div class="border-b pb-1">
+                                <span class="font-semibold">Konum URL:</span>
+                                @if ($customer->konum_url)
+                                    <a href="{{ $customer->konum_url }}" target="_blank" class="text-blue-500 hover:underline">{{ $customer->konum_url }}</a>
+                                @else
+                                    <span>-</span>
+                                @endif
+                            </div>
                         </div>
-                        <div>
-                            <p><span class="font-semibold">Fatura Tipi:</span> {{ $customer->fatura_tipi }}</p>
-                            <p><span class="font-semibold">Fatura Durumu:</span> {{ $customer->fatura_durumu }}</p>
-                            <p><span class="font-semibold">Tutar:</span> {{ $customer->tutar }}</p>
-                            <p><span class="font-semibold">Ödeme Durumu:</span> {{ $customer->odeme_durumu }}</p>
-                            <p><span class="font-semibold">Sözleşme Onay Durumu:</span> {{ $customer->sozlesme_onay_durumu }}</p>
-                            <p><span class="font-semibold">İGU:</span> {{ $customer->igu }}</p>
-                            <p><span class="font-semibold">İH:</span> {{ $customer->ih }}</p>
-                            <p><span class="font-semibold">Firma Ziyareti:</span> {{ $customer->firma_ziyareti }}</p>
-                            <p><span class="font-semibold">Defter:</span> {{ $customer->defter }}</p>
-                            <p><span class="font-semibold">RA:</span> {{ $customer->ra }}</p>
+
+                        {{-- Sağ sütun --}}
+                        <div class="space-y-2">
+                            @foreach ([
+                                'Fatura Tipi' => $customer->fatura_tipi,
+                                'Fatura Durumu' => $customer->fatura_durumu,
+                                'Tutar' => $customer->tutar ? number_format($customer->tutar, 2, ',', '.') : '-',
+                                'Ödeme Durumu' => $customer->odeme_durumu,
+                                'Sözleşme Onay Durumu' => $customer->sozlesme_onay_durumu ? 'Evet' : 'Hayır',
+                                'İGU' => $customer->igu,
+                                'İH' => $customer->ih,
+                                'Firma Ziyareti' => $customer->firma_ziyareti ? \Carbon\Carbon::parse($customer->firma_ziyareti)->format('d.m.Y') : '-',
+                                'Defter' => $customer->defter,
+                                'RA' => $customer->ra,
+                            ] as $label => $value)
+                                <div class="border-b pb-1">
+                                    <span class="font-semibold">{{ $label }}:</span> {{ $value ?: '-' }}
+                                </div>
+                            @endforeach
                         </div>
                     </div>
 
-                    <div class="mt-6 flex justify-end">
-                        <a href="{{ route('customers.edit', $customer) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 mr-2">
+                    {{-- Butonlar --}}
+                    <div class="mt-6 flex justify-end space-x-2">
+                        <a href="{{ route('customers.edit', $customer) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-md transition">
                             Düzenle
                         </a>
-                        <a href="{{ route('customers.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        <a href="{{ route('customers.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold rounded-md transition">
                             Geri Dön
                         </a>
                     </div>
+
                 </div>
             </div>
         </div>

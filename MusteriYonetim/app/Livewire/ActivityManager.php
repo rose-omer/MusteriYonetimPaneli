@@ -12,14 +12,6 @@ class ActivityManager extends Component
     public $editingActivityOriginalName = '';
     public $editingActivityNewName = '';
     public $activityName = '';
-
-    // ÖNEMLİ DEĞİŞİKLİK: FaaliyetManager özelliğini artık bir sınıf özelliği olarak tutmuyoruz.
-    // protected $faaliyetManager; // Bu satırı kaldırın veya yorum satırı yapın.
-
-    // ÖNEMLİ DEĞİŞİKLİK: Constructor metodunu kaldırıyoruz.
-    // Public function __construct(FaaliyetManager $faaliyetManager) { ... } // Bu metodu tamamen kaldırın.
-
-    // Doğrulama kuralları
     protected function rules()
     {
         return [

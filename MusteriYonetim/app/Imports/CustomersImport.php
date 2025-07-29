@@ -7,25 +7,20 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\WithStartRow;
+use Carbon\Carbon;
 
 class CustomersImport implements ToModel, WithHeadingRow, WithValidation, WithStartRow
 {
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
     public function model(array $row)
     {
-        // dd($row); // Bu satırı artık kaldırabilirsiniz, çünkü çıktıyı aldık
+        
 
         return new Customer([
-            // Bütün anahtarları dd($row) çıktısındaki slugified halleriyle güncelliyoruz
             'hizmet_alan_isyeri_unvani' => $row['hizmet_alan_isyeri_unvani'] ?? null,
-            'firma_no'                  => $row['firma_no'] ?? null, // Bu alan zaten dd çıktısında null, bilginize
+            'firma_no'                  => $row['firma_no'] ?? null,
             'gorunur_unvani'            => $row['gorunur_unvani'] ?? null,
             'faaliyet'                  => $row['faaliyet'] ?? null,
-            'calisan_sayisi'            => $row['hizmet_alan_isyeri_calisan_sayisi'] ?? null,
+            'calisan_sayisi'            => isset($row['hizmet_alan_isyeri_calisan_sayisi']) ? (int)$row['hizmet_alan_isyeri_calisan_sayisi'] : null,
             'tehlike_sinifi'            => $row['hizmet_alan_isyeri_tehlike_sinifi'] ?? null,
             'firma_sorumlusu'           => $row['firma_sorumlusu'] ?? null,
             'telefon_numarasi'          => $row['yetkili_kisi_telefon_numarasi'] ?? null,
@@ -34,12 +29,12 @@ class CustomersImport implements ToModel, WithHeadingRow, WithValidation, WithSt
             'konum_url'                 => $row['konum'] ?? null,
             'fatura_tipi'               => $row['fatura_tipi'] ?? null,
             'fatura_durumu'             => $row['fatura_durumu'] ?? null,
-            'tutar'                     => $row['tutar'] ?? null, // Bu alan da dd çıktısında null, bilginize
-            'odeme_durumu'              => $row['odeme'] ?? null, // Excel'deki 'ÖDEME' -> 'odeme' oldu
-            'sozlesme_onay_durumu'      => $row['sozlesme_onay_durumu'] ?? null,
+            'tutar'                     => isset($row['tutar']) ? (float)$row['tutar'] : null,
+            'odeme_durumu'              => $row['odeme'] ?? null,
+            'sozlesme_onay_durumu'      => filter_var($row['sozlesme_onay_durumu'] ?? false, FILTER_VALIDATE_BOOLEAN),
             'igu'                       => $row['igu'] ?? null,
             'ih'                        => $row['ih'] ?? null,
-            'firma_ziyareti'            => $row['firma_ziyareti'] ?? null,
+            'firma_ziyareti'            => null,
             'defter'                    => $row['defter'] ?? null,
             'ra'                        => $row['ra'] ?? null,
         ]);
@@ -60,6 +55,7 @@ class CustomersImport implements ToModel, WithHeadingRow, WithValidation, WithSt
         return [
             'hizmet_alan_isyeri_unvani' => 'required|string|max:255',
             'firma_no'                  => 'nullable|string|max:255',
+            // Diğer validasyonlar buraya eklenebilir
         ];
     }
 

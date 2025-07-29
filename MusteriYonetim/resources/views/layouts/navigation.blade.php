@@ -22,6 +22,11 @@
                     <x-nav-link :href="route('activities.manage')" :active="request()->routeIs('activities.manage')">
                         {{ __('Faaliyetler') }}
                     </x-nav-link>
+                    {{-- Excel Yükleme Bağlantısı (Masaüstü görünüm) --}}
+                    <x-nav-link :href="route('customers.import')" :active="request()->routeIs('customers.import')">
+                           {{ __('Excel Yükle') }}
+                    </x-nav-link>
+
 
                 </div>
             </div>
