@@ -45,6 +45,7 @@ Uygulama, kullanıcı dostu ve güncel bir arayüze sahip olup, operasyonel veri
 ### Ekran Görüntüsü
 ![login](https://github.com/user-attachments/assets/f6929bc0-4e56-43f8-8350-30424c76b930)
 
+![Kayıt 2025-07-30 171952](https://github.com/user-attachments/assets/697df4a7-40c0-4be3-89cb-ced600113c2c)
 
 ## ⚙️ Kurulum
 
