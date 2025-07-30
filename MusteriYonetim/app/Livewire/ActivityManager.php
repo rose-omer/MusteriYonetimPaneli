@@ -1,95 +1,65 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Http\Livewire;
 
-use App\Services\FaaliyetManager; // Bu satırın olduğundan emin olun!
 use Livewire\Component;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
+use Livewire\WithPagination;
+use App\Services\FaaliyetManager;
 
-class ActivityManager extends Component
+class ActivitiesManage extends Component
 {
+    use WithPagination;
+
+    public $activityName = '';
     public $editingActivityOriginalName = '';
     public $editingActivityNewName = '';
-    public $activityName = '';
-    protected function rules()
-    {
-        return [
-            'activityName' => [
-                'required',
-                'string',
-                'max:255',
-                function ($attribute, $value, $fail) {
-                    // ÖNEMLİ DÜZELTME: Doğrulama closure'ı içinde FaaliyetManager'ı doğrudan çözüyoruz.
-                    $faaliyetManager = app(FaaliyetManager::class);
-                    if (in_array($value, $faaliyetManager->getFaaliyetler())) {
-                        $fail('Bu faaliyet adı zaten mevcut.');
-                    }
-                },
-            ],
-            'editingActivityNewName' => [
-                'required',
-                'string',
-                'max:255',
-                function ($attribute, $value, $fail) {
-                    // Aynı şekilde, düzenleme için de closure içinde doğrudan çözüyoruz.
-                    $faaliyetManager = app(FaaliyetManager::class);
-                    if ($value !== $this->editingActivityOriginalName && in_array($value, $faaliyetManager->getFaaliyetler())) {
-                        $fail('Bu faaliyet adı zaten mevcut.');
-                    }
-                },
-            ],
-        ];
-    }
 
-    // Validasyon mesajları (AYNI KALACAK)
-    protected $messages = [
-        'activityName.required' => 'Faaliyet adı boş bırakılamaz.',
-        'editingActivityNewName.required' => 'Faaliyet adı boş bırakılamaz.',
+    protected $paginationTheme = 'tailwind';
+
+    protected $rules = [
+        'activityName' => 'required|string|min:2|max:255',
+        'editingActivityNewName' => 'required|string|min:2|max:255',
     ];
 
+    public function render()
+    {
+        $manager = new FaaliyetManager();
+        $activities = collect($manager->getFaaliyetler())->sort()->values();
+
+        // manuel paginate için:
+        $page = request()->get('page', 1);
+        $perPage = 10;
+        $items = $activities->slice(($page - 1) * $perPage, $perPage);
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $activities->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        return view('livewire.activities-manage', [
+            'activities' => $paginator,
+        ]);
+    }
 
     public function createActivity()
     {
-        // ÖNEMLİ DÜZELTME: FaaliyetManager'ı bu metod içinde doğrudan çözüyoruz.
-        $faaliyetManager = app(FaaliyetManager::class);
-
         $this->validateOnly('activityName');
-
-        if ($faaliyetManager->addFaaliyet($this->activityName)) {
+        $manager = new FaaliyetManager();
+        if ($manager->addFaaliyet($this->activityName)) {
+            session()->flash('activity_message', 'Faaliyet başarıyla eklendi.');
             $this->activityName = '';
-            session()->flash('activity_message', 'Faaliyet başarıyla eklendi!');
+            $this->resetPage();
         } else {
-            session()->flash('activity_error', 'Faaliyet eklenirken bir sorun oluştu veya zaten mevcut.');
+            session()->flash('activity_error', 'Faaliyet eklenemedi. Aynı isimde olabilir.');
         }
     }
 
-    public function editActivity(string $activityName)
+    public function editActivity($name)
     {
-        $this->editingActivityOriginalName = $activityName;
-        $this->editingActivityNewName = $activityName;
-    }
-
-    public function updateActivity()
-    {
-        // ÖNEMLİ DÜZELTME: FaaliyetManager'ı bu metod içinde doğrudan çözüyoruz.
-        $faaliyetManager = app(FaaliyetManager::class);
-
-        $this->validateOnly('editingActivityNewName');
-
-        if ($this->editingActivityOriginalName !== $this->editingActivityNewName) {
-            $faaliyetManager->removeFaaliyet($this->editingActivityOriginalName);
-            if ($faaliyetManager->addFaaliyet($this->editingActivityNewName)) {
-                session()->flash('activity_message', 'Faaliyet başarıyla güncellendi!');
-            } else {
-                $faaliyetManager->addFaaliyet($this->editingActivityOriginalName);
-                session()->flash('activity_error', 'Faaliyet güncellenirken bir sorun oluştu veya yeni ad zaten mevcut.');
-            }
-        } else {
-            session()->flash('activity_message', 'Faaliyet adı değişmedi.');
-        }
-
-        $this->cancelEdit();
+        $this->editingActivityOriginalName = $name;
+        $this->editingActivityNewName = $name;
     }
 
     public function cancelEdit()
@@ -98,37 +68,30 @@ class ActivityManager extends Component
         $this->editingActivityNewName = '';
     }
 
-    public function deleteActivity(string $faaliyet)
+    public function updateActivity()
     {
-        // ÖNEMLİ DÜZELTME: FaaliyetManager'ı bu metod içinde doğrudan çözüyoruz.
-        $faaliyetManager = app(FaaliyetManager::class);
+        $this->validateOnly('editingActivityNewName');
 
-        if ($faaliyetManager->removeFaaliyet($faaliyet)) {
-            session()->flash('activity_message', 'Faaliyet başarıyla silindi!');
-        } else {
-            session()->flash('activity_error', 'Faaliyet silinirken bir sorun oluştu.');
+        $manager = new FaaliyetManager();
+
+        if ($this->editingActivityOriginalName !== $this->editingActivityNewName) {
+            $manager->removeFaaliyet($this->editingActivityOriginalName);
+            $manager->addFaaliyet($this->editingActivityNewName);
+            session()->flash('activity_message', 'Faaliyet başarıyla güncellendi.');
         }
+
+        $this->cancelEdit();
+        $this->resetPage();
     }
 
-    public function render()
+    public function deleteActivity($name)
     {
-        // ÖNEMLİ DÜZELTME: FaaliyetManager'ı bu metod içinde doğrudan çözüyoruz.
-        $faaliyetManager = app(FaaliyetManager::class);
-        $allActivities = $faaliyetManager->getFaaliyetler();
-
-        $perPage = 5;
-        $currentPage = Paginator::resolveCurrentPage() ?: 1;
-
-        $pagedData = array_slice($allActivities, ($currentPage - 1) * $perPage, $perPage);
-
-        $activities = new LengthAwarePaginator(
-            $pagedData,
-            count($allActivities),
-            $perPage,
-            $currentPage,
-            ['path' => Paginator::resolveCurrentPath()]
-        );
-
-        return view('livewire.activity-manager', compact('activities'));
+        $manager = new FaaliyetManager();
+        if ($manager->removeFaaliyet($name)) {
+            session()->flash('activity_message', 'Faaliyet silindi.');
+            $this->resetPage();
+        } else {
+            session()->flash('activity_error', 'Faaliyet silinemedi.');
+        }
     }
 }
