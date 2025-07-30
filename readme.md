@@ -42,6 +42,10 @@ Uygulama, kullanıcı dostu ve güncel bir arayüze sahip olup, operasyonel veri
 | Blade            | Laravel’in esnek şablon motoru           |
 | Alpine.js        | Laravel Breeze ile gelen hafif JS yapısı |
 
+### Ekran Görüntüsü
+![login](https://github.com/user-attachments/assets/f6929bc0-4e56-43f8-8350-30424c76b930)
+
+
 ## ⚙️ Kurulum
 
 ### 1. Depoyu Klonlayın
