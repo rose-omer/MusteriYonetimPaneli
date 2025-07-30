@@ -48,3 +48,68 @@ Uygulama, kullanıcı dostu ve güncel bir arayüze sahip olup, operasyonel veri
 ```bash
 git clone https://github.com/KULLANICI_ADINIZ/Emar-CRM.git
 cd Emar-CRM
+```
+
+### 2. Composer Kurulumu
+```bash
+
+composer install
+```
+### 3. .env Dosyasını Oluşturun
+```bash
+
+cp .env.example .env
+```
+### 4. Uygulama Anahtarını Oluşturun
+```bash
+
+php artisan key:generate
+```
+
+### 5. Veritabanını Ayarlayın
+```bash
+
+.env dosyasını açıp bilgileri güncelleyin:
+```
+```bash
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=emar_crm
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### 6. Veritabanı Tablolarını Oluşturun
+```bash
+
+php artisan migrate
+```
+
+### 7. NPM Kurulumu ve Derleme
+```bash
+
+npm install
+npm run dev   # Geliştirme için
+```
+
+# veya üretim için:
+# npm run build
+### 8. Sunucuyu Başlatın
+```bash
+
+php artisan serve
+Tarayıcıdan şu adrese gidin: http://127.0.0.1:8000
+```
+### 🧪 Kullanım
+
+- Kayıt Olun: http://127.0.0.1:8000/register
+
+- Giriş Yapın: http://127.0.0.1:8000/login
+
+- Müşteri İşlemleri: Müşteri ekle, güncelle, sil.
+
+- Faaliyet Yönetimi: Müşteriyle ilgili tüm etkileşimleri kaydedin.
+
+
