@@ -5,7 +5,9 @@ namespace App\Filament\Widgets;
 use App\Enums\OdemeDurumu;
 use App\Filament\Resources\Customers\CustomerResource;
 use App\Models\Customer;
+use App\Support\TurkishFormat;
 use Filament\Actions\Action;
+use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -41,9 +43,10 @@ class GecikmisOdemeler extends TableWidget
                 TextColumn::make('odeme_durumu')->label('Ödeme')->badge(),
                 TextColumn::make('tutar')
                     ->label('Tutar')
-                    ->money('TRY', locale: 'tr')
+                    ->formatStateUsing(fn ($state) => TurkishFormat::tl($state, 2))
+                    ->fontFamily(FontFamily::Mono)
                     ->alignEnd()
-                    ->extraAttributes(['class' => 'tabular-nums']),
+                    ->extraAttributes(['class' => 'tabular-nums whitespace-nowrap']),
             ])
             ->headerActions([
                 Action::make('tumu')

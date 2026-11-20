@@ -17,7 +17,7 @@
 
         <div class="mt-8 flex flex-wrap gap-3">
             <a href="{{ url('/admin') }}"
-               class="inline-flex items-center rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
+               class="inline-flex min-h-11 items-center rounded-lg bg-brand-600 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vurgu dark:bg-brand-500 dark:focus-visible:outline-vurgu-acik">
                 Gösterge paneline dön
             </a>
             @hasSection('secondary')
@@ -25,7 +25,7 @@
             @endif
         </div>
 
-        <p class="mt-10 text-xs text-slate-500 dark:text-slate-400">Hata kodu @yield('code')</p>
+        <p class="mt-10 text-xs text-slate-600 dark:text-slate-400">Hata kodu <span class="font-mono">@yield('code')</span></p>
     </main>
 </body>
 </html>

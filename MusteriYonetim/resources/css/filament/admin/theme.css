@@ -1,22 +1,91 @@
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
-@import '@fontsource-variable/ibm-plex-sans/wght.css';
+@import '@fontsource-variable/instrument-sans/wght.css';
+@import '@fontsource-variable/spline-sans-mono/wght.css';
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
 
 /*
- * Müşteri Yönetim Paneli — tema katmanı
- * Renk tokenleri panelde tanımlı (AdminPanelProvider::colors): primary = petrol mavisi,
- * gray = slate. Burada yalnız tip, tarayıcı yüzeyleri ve özel bileşenler var.
- * Ayrıntı: DESIGN.md
+ * Müşteri Yönetim Paneli — tema katmanı ("Harita ve Liste" tasarım dili)
+ * Renk basamakları panelde tanımlı (AdminPanelProvider::colors):
+ *   primary = mürekkep (#17323E), gray = mavi-gri nötr, vurgu = erik (#6E2A55),
+ *   tehlike-az / tehlike-orta / tehlike-cok = tek tonlu koyulaşan sıra.
+ * Burada: yüzey tokenleri, tip, harita ekranı bileşenleri. Ayrıntı: DESIGN.md
  */
 
 @layer base {
     :root {
         --mtp-radius-sm: 0.375rem;
         --mtp-radius: 0.5rem;
+        --mtp-radius-kart: 0.625rem;
         --mtp-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
         --mtp-duration: 160ms;
+        /* Yapışkan üst çubuk (4rem) + 8px: kaydırılan başlık çubuğun altında kalmaz. */
+        --mtp-ust-bosluk: 4.5rem;
+
+        /* Yüzey ve metin */
+        --mtp-yuzey: #ffffff;
+        --mtp-metin: #17323e;
+        --mtp-soluk: #4c6470;
+        --mtp-cizgi: #d5dee2;
+        --mtp-hover: #eef3f4;
+        --mtp-dolu-zemin: #17323e;
+        --mtp-dolu-metin: #ffffff;
+
+        /* Vurgu: erik */
+        --mtp-vurgu: #6e2a55;
+        --mtp-vurgu-cizgi: #6e2a55;
+        --mtp-vurgu-acik: #f3e9ef;
+        --mtp-vurgu-soluk: #f7f1f4;
+        --mtp-vurgu-kenar: #b98aa6;
+
+        /* Harita */
+        --mtp-deniz: #d3e3ea;
+        --mtp-izgara: #c2d5dd;
+        --mtp-kara: #fbfbf8;
+        --mtp-kara-cizgi: #8fa8b2;
+        --mtp-daire-cizgi: #ffffff;
+
+        /* Tehlike sınıfı: koyuluk = tehlike */
+        --mtp-hz-0: #c3cfd4;
+        --mtp-hz-1: #cfe3e8;
+        --mtp-hz-1-cizgi: #17323e;
+        --mtp-hz-1-metin: #17323e;
+        --mtp-hz-2: #427485;
+        --mtp-hz-2-metin: #ffffff;
+        --mtp-hz-3: #133543;
+        --mtp-hz-3-metin: #ffffff;
+    }
+
+    :root.dark {
+        --mtp-yuzey: var(--gray-900);
+        --mtp-metin: #e6ecef;
+        --mtp-soluk: #8a9ca4;
+        --mtp-cizgi: color-mix(in oklab, white 12%, transparent);
+        --mtp-hover: color-mix(in oklab, white 5%, transparent);
+        /* Koyu zeminde dolu düğme: açık basamak + koyu metin; kenarı zeminden 3:1 üstü ayrılır. */
+        --mtp-dolu-zemin: #a9c6d2;
+        --mtp-dolu-metin: #0b1920;
+
+        --mtp-vurgu-cizgi: #c792b1;
+        --mtp-vurgu-acik: color-mix(in oklab, #6e2a55 38%, var(--gray-900));
+        --mtp-vurgu-soluk: color-mix(in oklab, #6e2a55 20%, var(--gray-900));
+
+        --mtp-deniz: #102028;
+        --mtp-izgara: #172b34;
+        --mtp-kara: #253942;
+        --mtp-kara-cizgi: #4c6470;
+        --mtp-daire-cizgi: #0b1920;
+
+        /* Koyu zeminde sıra açıklıkla kurulur: en açık = en tehlikeli. */
+        --mtp-hz-0: #4c6470;
+        --mtp-hz-1: #2e4d57;
+        --mtp-hz-1-cizgi: #c2dde4;
+        --mtp-hz-1-metin: #ffffff;
+        --mtp-hz-2: #689bac;
+        --mtp-hz-2-metin: #0b1920;
+        --mtp-hz-3: #c2dde4;
+        --mtp-hz-3-metin: #0b1920;
     }
 
     html {
@@ -31,17 +100,23 @@
     }
 
     ::selection {
-        background-color: color-mix(in oklab, var(--primary-500) 28%, transparent);
-        color: inherit;
+        background-color: #e6d2de;
+        color: #17323e;
     }
 
     input,
     textarea {
-        caret-color: var(--primary-600);
+        caret-color: var(--mtp-vurgu-cizgi);
     }
 
     a {
         text-underline-offset: 0.2em;
+    }
+
+    /* Odak: erik çizgi. Filament bileşenleri kendi halkasını korur (katman sırası). */
+    :where(a, button, summary, [role='button'], [tabindex]):focus-visible {
+        outline: 2px solid var(--mtp-vurgu-cizgi);
+        outline-offset: 2px;
     }
 
     /* Sayısal veri hizalı okunur. */
@@ -64,28 +139,734 @@
     }
 }
 
-@layer components {
-    /* Başlıklar: dar tracking, net ağırlık basamakları. */
-    .fi-header-heading {
-        letter-spacing: -0.018em;
-        text-wrap: balance;
-    }
+/*
+ * Filament bileşenlerine dil uyumu. Katmansız: Filament'in katmanlı kurallarını geçer.
+ * Kart: tek ince kenarlık, gölge yok. Rozet: hap biçimi.
+ */
+.fi-section,
+.fi-ta-ctn,
+.fi-wi-stats-overview-stat,
+.fi-fo-tabs:not(.fi-contained),
+.fi-sc-tabs.fi-contained {
+    border-radius: var(--mtp-radius-kart);
+    box-shadow: 0 0 0 1px var(--mtp-cizgi);
+}
 
+.fi-topbar {
+    box-shadow: 0 1px 0 var(--mtp-cizgi);
+}
+
+.fi-badge {
+    border-radius: 999px;
+}
+
+.fi-header-heading {
+    font-size: 1.5rem;
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+}
+
+.fi-wi-stats-overview-stat-value {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+}
+
+/* Tehlike rozetleri: harita ile aynı ton sırası. */
+.fi-badge.fi-color-tehlike-az {
+    background-color: var(--mtp-hz-1);
+    color: var(--mtp-hz-1-metin);
+    box-shadow: inset 0 0 0 1px var(--mtp-hz-1-cizgi);
+}
+
+.fi-badge.fi-color-tehlike-orta {
+    background-color: var(--mtp-hz-2);
+    color: var(--mtp-hz-2-metin);
+    box-shadow: none;
+}
+
+.fi-badge.fi-color-tehlike-cok {
+    background-color: var(--mtp-hz-3);
+    color: var(--mtp-hz-3-metin);
+    box-shadow: none;
+}
+
+.fi-badge.fi-color-tehlike-az *,
+.fi-badge.fi-color-tehlike-orta *,
+.fi-badge.fi-color-tehlike-cok * {
+    color: inherit;
+}
+
+/*
+ * Koyu tema dolu düğme: mürekkep dolgu koyu zeminde kaybolur. Açık basamak + koyu metin.
+ * Kırmızı (yıkıcı) düğme: açıkta 600 + beyaz, koyuda 400 + 950 metin (dolgu ve metin AA).
+ */
+.dark .fi-btn.fi-color-primary:not(.fi-outlined) {
+    --dark-bg: var(--primary-300);
+    --dark-text: var(--primary-950);
+    --dark-hover-bg: var(--primary-200);
+    --dark-hover-text: var(--primary-950);
+}
+
+.fi-btn.fi-color-danger:not(.fi-outlined) {
+    --bg: var(--danger-600);
+    --text: #ffffff;
+    --hover-bg: var(--danger-700);
+    --hover-text: #ffffff;
+}
+
+.dark .fi-btn.fi-color-danger:not(.fi-outlined) {
+    --dark-bg: var(--danger-400);
+    --dark-text: var(--danger-950);
+    --dark-hover-bg: var(--danger-300);
+    --dark-hover-text: var(--danger-950);
+}
+
+/* Hedef boyutu en az 24 px (WCAG 2.2, 2.5.8): Filament varsayılanları 18-20 px. */
+.fi-ta-header-cell-sort-btn,
+.fi-breadcrumbs-item-label,
+.fi-topbar .fi-logo,
+.fi-copyable {
+    min-height: 1.5rem;
+}
+
+.fi-ta-header-cell-sort-btn,
+.fi-breadcrumbs-item-label,
+.fi-copyable {
+    display: inline-flex;
+    align-items: center;
+}
+
+@layer components {
     .fi-section-header-heading {
         letter-spacing: -0.006em;
     }
 
-    .fi-wi-stats-overview-stat-value {
-        letter-spacing: -0.024em;
-    }
-
     .fi-wi-stats-overview-stat {
-        transition: border-color var(--mtp-duration) var(--mtp-ease-out), box-shadow var(--mtp-duration) var(--mtp-ease-out);
+        transition: box-shadow var(--mtp-duration) var(--mtp-ease-out);
     }
 
     a.fi-wi-stats-overview-stat:hover {
-        @apply ring-primary-600/40 dark:ring-primary-400/40;
+        box-shadow: 0 0 0 1px var(--mtp-metin);
     }
+
+    .mtp-num {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- Müşteri haritası ---------- */
+
+    .mtp-harita {
+        @apply grid gap-5;
+        color: var(--mtp-metin);
+    }
+
+    .mtp-harita__ust {
+        @apply flex flex-wrap items-center gap-x-6 gap-y-3;
+    }
+
+    .mtp-harita__baslik {
+        @apply m-0 flex items-center gap-2.5 text-[1.375rem] leading-tight font-semibold;
+        letter-spacing: -0.01em;
+    }
+
+    .mtp-harita__baslik-ikon {
+        @apply size-[22px] shrink-0;
+    }
+
+    .mtp-harita__arama {
+        flex: 1 1 320px;
+        max-width: 520px;
+    }
+
+    .mtp-harita__ekle {
+        @apply ms-auto;
+    }
+
+    .mtp-harita .fi-input,
+    .mtp-harita .fi-select-input {
+        min-height: 2.625rem;
+        font-size: 0.9375rem;
+    }
+
+    .mtp-harita__izgara {
+        @apply grid items-start gap-5;
+        grid-template-columns: minmax(0, 1fr) 480px;
+    }
+
+    @media (max-width: 1180px) {
+        .mtp-harita__izgara {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    .mtp-harita__sol {
+        @apply min-w-0;
+    }
+
+    /* Geniş ve yeterince yüksek ekranda harita ve künye, uzun liste kayarken görünür kalır. */
+    @media (min-width: 1181px) and (min-height: 820px) {
+        .mtp-harita__sol {
+            position: sticky;
+            top: var(--mtp-ust-bosluk);
+        }
+    }
+
+    .mtp-kart {
+        @apply overflow-hidden;
+        background: var(--mtp-yuzey);
+        border: 1px solid var(--mtp-cizgi);
+        border-radius: var(--mtp-radius-kart);
+    }
+
+    .mtp-kart--harita {
+        border-radius: var(--mtp-radius-kart) var(--mtp-radius-kart) 0 0;
+    }
+
+    /* Özet şeridi */
+    .mtp-ozet {
+        @apply grid grid-cols-3;
+        border-bottom: 1px solid var(--mtp-cizgi);
+    }
+
+    .mtp-ozet__hucre {
+        @apply block px-[18px] py-3.5 no-underline;
+        color: inherit;
+        border-inline-end: 1px solid var(--mtp-cizgi);
+        transition: background-color var(--mtp-duration) var(--mtp-ease-out);
+    }
+
+    .mtp-ozet__hucre:last-child {
+        border-inline-end: 0;
+    }
+
+    .mtp-ozet__hucre:hover {
+        background: var(--mtp-hover);
+    }
+
+    .mtp-ozet__hucre:focus-visible {
+        outline-offset: -3px;
+    }
+
+    .mtp-ozet__etiket {
+        @apply block text-[0.84375rem];
+        color: var(--mtp-soluk);
+    }
+
+    .mtp-ozet__deger {
+        @apply mt-0.5 block text-2xl font-medium;
+        letter-spacing: -0.02em;
+    }
+
+    .mtp-ozet__alt {
+        @apply block text-[0.8125rem];
+        color: var(--mtp-soluk);
+    }
+
+    @media (max-width: 760px) {
+        .mtp-ozet {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .mtp-ozet__hucre {
+            border-inline-end: 0;
+            border-bottom: 1px solid var(--mtp-cizgi);
+        }
+
+        .mtp-ozet__hucre:last-child {
+            border-bottom: 0;
+        }
+    }
+
+    /* Harita çizimi */
+    .mtp-map-kap {
+        @apply overflow-x-auto;
+        background: var(--mtp-deniz);
+        transition: opacity var(--mtp-duration) var(--mtp-ease-out);
+    }
+
+    .mtp-map-kap:focus-visible {
+        outline-offset: -3px;
+    }
+
+    /* Harita kutudan genişse (640 px altı) kaydırma ipucu görünür. */
+    .mtp-map-ipucu {
+        @apply m-0 hidden items-center gap-1.5 px-4 py-2 text-[0.8125rem];
+        color: var(--mtp-soluk);
+        border-bottom: 1px solid var(--mtp-cizgi);
+    }
+
+    /* 640 px harita + 2 × 16 px sayfa kenarı + kenarlık. */
+    @media (max-width: 673px) {
+        .mtp-map-ipucu {
+            display: flex;
+        }
+    }
+
+    .mtp-map {
+        @apply block h-auto w-full;
+        min-width: 640px;
+    }
+
+    .mtp-map__deniz,
+    .mtp-map__ic-deniz {
+        fill: var(--mtp-deniz);
+    }
+
+    .mtp-map__ic-deniz {
+        stroke: var(--mtp-kara-cizgi);
+        stroke-width: 1;
+        stroke-linejoin: round;
+    }
+
+    .mtp-map__izgara path {
+        fill: none;
+        stroke: var(--mtp-izgara);
+        stroke-width: 1;
+    }
+
+    .mtp-map__kara {
+        fill: var(--mtp-kara);
+        stroke: var(--mtp-kara-cizgi);
+        stroke-width: 1.5;
+        stroke-linejoin: round;
+    }
+
+    .mtp-map__bogaz {
+        stroke: var(--mtp-deniz);
+        stroke-width: 2.5;
+        stroke-linecap: round;
+    }
+
+    .mtp-map__il {
+        cursor: pointer;
+        outline: none;
+    }
+
+    .mtp-map__odak {
+        fill: transparent;
+        stroke: transparent;
+        stroke-width: 3;
+    }
+
+    .mtp-map__il:hover .mtp-map__odak {
+        stroke: color-mix(in oklab, var(--mtp-vurgu-cizgi) 40%, transparent);
+    }
+
+    .mtp-map__il:focus-visible .mtp-map__odak {
+        stroke: var(--mtp-vurgu-cizgi);
+    }
+
+    .mtp-map__daire {
+        stroke: var(--mtp-daire-cizgi);
+        stroke-width: 2;
+    }
+
+    .mtp-hz-0 {
+        fill: var(--mtp-hz-0);
+    }
+
+    .mtp-hz-1 {
+        fill: var(--mtp-hz-1);
+        stroke: var(--mtp-hz-1-cizgi);
+    }
+
+    .mtp-hz-2 {
+        fill: var(--mtp-hz-2);
+    }
+
+    .mtp-hz-3 {
+        fill: var(--mtp-hz-3);
+    }
+
+    .mtp-map__halka {
+        fill: none;
+        stroke: var(--mtp-vurgu-cizgi);
+    }
+
+    .mtp-map__halka.is-acik {
+        stroke-width: 2.5;
+    }
+
+    .mtp-map__halka.is-secili {
+        stroke-width: 1.75;
+        stroke-dasharray: 3 3;
+    }
+
+    .mtp-map__etiket {
+        font-size: 13px;
+        font-weight: 500;
+        fill: var(--mtp-metin);
+        stroke: var(--mtp-kara);
+        stroke-width: 3;
+        paint-order: stroke;
+        pointer-events: none;
+    }
+
+    .mtp-map__etiket.is-vurgu {
+        font-weight: 600;
+        fill: var(--mtp-vurgu-cizgi);
+    }
+
+    .is-yukleniyor {
+        opacity: 0.55;
+    }
+
+    /* Lejant */
+    .mtp-lejant {
+        @apply flex flex-wrap items-center gap-x-[22px] gap-y-2 px-4 py-2.5 text-[0.8125rem];
+        color: var(--mtp-soluk);
+        border-top: 1px solid var(--mtp-cizgi);
+    }
+
+    .mtp-lejant__grup {
+        @apply flex items-center gap-1.5;
+    }
+
+    .mtp-lejant__not {
+        @apply ms-auto;
+    }
+
+    /* Künye */
+    .mtp-kunye {
+        @apply mt-4 px-[18px] pt-4 pb-[18px];
+        background: var(--mtp-yuzey);
+        border: 1px solid var(--mtp-cizgi);
+        border-top: 3px solid var(--mtp-vurgu-cizgi);
+        border-radius: 0 0 var(--mtp-radius-kart) var(--mtp-radius-kart);
+        scroll-margin-top: var(--mtp-ust-bosluk);
+    }
+
+    .mtp-kunye.is-bos {
+        border-top-color: var(--mtp-cizgi);
+    }
+
+    .mtp-kunye__bas {
+        @apply flex flex-wrap items-start justify-between gap-3;
+    }
+
+    .mtp-kunye__kimlik {
+        @apply min-w-0;
+    }
+
+    .mtp-kunye__no {
+        @apply text-[0.8125rem];
+        color: var(--mtp-soluk);
+    }
+
+    .mtp-kunye__ad {
+        @apply mt-0.5 mb-1.5 text-[1.375rem] leading-tight font-semibold;
+        overflow-wrap: anywhere;
+    }
+
+    .mtp-kunye__meta {
+        @apply flex flex-wrap items-center gap-2 text-sm;
+        color: var(--mtp-soluk);
+    }
+
+    .mtp-kunye__yer {
+        @apply inline-flex items-center gap-1;
+    }
+
+    .mtp-kunye__eylemler {
+        @apply flex flex-wrap gap-2;
+    }
+
+    .mtp-dugme {
+        @apply inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg px-3.5 text-[0.90625rem] no-underline;
+        color: var(--mtp-metin);
+        background: var(--mtp-yuzey);
+        border: 1px solid var(--mtp-cizgi);
+        transition: background-color var(--mtp-duration) var(--mtp-ease-out);
+    }
+
+    .mtp-dugme:hover {
+        background: var(--mtp-hover);
+    }
+
+    .mtp-dugme.is-dolu {
+        color: var(--mtp-dolu-metin);
+        background: var(--mtp-dolu-zemin);
+        border-color: var(--mtp-dolu-zemin);
+    }
+
+    .mtp-dugme.is-dolu:hover {
+        background: color-mix(in oklab, var(--mtp-dolu-zemin) 88%, white);
+    }
+
+    .mtp-dugme.is-ikon {
+        @apply w-11 justify-center px-0;
+    }
+
+    .mtp-kunye__alanlar {
+        @apply m-0 mt-4 grid gap-x-[18px] gap-y-3.5 pt-3.5;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        border-top: 1px solid var(--mtp-cizgi);
+    }
+
+    @media (max-width: 760px) {
+        .mtp-kunye__alanlar {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    .mtp-kunye__alanlar dt {
+        @apply text-[0.8125rem];
+        color: var(--mtp-soluk);
+    }
+
+    .mtp-kunye__alanlar dd {
+        @apply m-0 mt-0.5 text-[0.9375rem] font-medium;
+        overflow-wrap: anywhere;
+    }
+
+    .mtp-kunye__alanlar dd.mtp-num {
+        @apply text-sm;
+    }
+
+    .mtp-kunye__alanlar a {
+        color: inherit;
+        text-decoration: underline;
+        text-decoration-color: var(--mtp-cizgi);
+    }
+
+    .mtp-kunye__alanlar a:hover {
+        color: var(--mtp-vurgu-cizgi);
+        text-decoration-color: currentColor;
+    }
+
+    .mtp-kunye__yok {
+        @apply font-normal;
+        color: var(--mtp-soluk);
+    }
+
+    .mtp-kunye__not {
+        @apply mt-3 mb-0 text-[0.8125rem];
+        color: var(--mtp-soluk);
+    }
+
+    .mtp-kunye__bos-baslik {
+        @apply m-0 text-[0.9375rem] font-semibold;
+    }
+
+    .mtp-kunye__bos-metin {
+        @apply mt-1 mb-0 max-w-[60ch] text-sm;
+        color: var(--mtp-soluk);
+    }
+
+    /* Liste */
+    .mtp-liste__filtre {
+        @apply px-3.5 pt-3.5 pb-3;
+        border-bottom: 1px solid var(--mtp-cizgi);
+    }
+
+    .mtp-etiket {
+        @apply mb-1 block text-[0.8125rem];
+        color: var(--mtp-soluk);
+    }
+
+    .mtp-segment {
+        @apply flex overflow-hidden rounded-md;
+        border: 1px solid var(--mtp-cizgi);
+    }
+
+    .mtp-segment__dugme {
+        @apply min-h-10 flex-1 cursor-pointer px-2.5 text-sm whitespace-nowrap;
+        color: var(--mtp-metin);
+        background: var(--mtp-yuzey);
+        border-inline-end: 1px solid var(--mtp-cizgi);
+        transition: background-color var(--mtp-duration) var(--mtp-ease-out);
+    }
+
+    .mtp-segment__dugme:last-child {
+        border-inline-end: 0;
+    }
+
+    .mtp-segment__dugme:hover {
+        background: var(--mtp-hover);
+    }
+
+    .mtp-segment__dugme.is-secili {
+        color: var(--mtp-dolu-metin);
+        background: var(--mtp-dolu-zemin);
+    }
+
+    .mtp-segment__dugme:focus-visible {
+        outline-offset: -3px;
+    }
+
+    .mtp-liste__secimler {
+        @apply mt-2.5 flex flex-wrap gap-2.5;
+    }
+
+    .mtp-alan {
+        @apply min-w-[140px] flex-1;
+    }
+
+    /* Toplu işlem çubuğu: özet ve seçimi kaldır üstte, işlemler altta; dar sütunda kırılma tahmin edilebilir. */
+    .mtp-toplu {
+        @apply grid items-center gap-x-1 gap-y-1.5 py-2 ps-3.5 pe-2 text-white;
+        grid-template-columns: minmax(0, 1fr) auto;
+        background: var(--mtp-vurgu);
+    }
+
+    .mtp-toplu__ozet {
+        @apply text-[0.90625rem] font-semibold;
+    }
+
+    .mtp-toplu__eylemler {
+        @apply col-span-2 flex flex-wrap gap-1.5;
+    }
+
+    .mtp-toplu__dugme {
+        @apply flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md bg-transparent px-2 text-sm text-white;
+        border: 1px solid var(--mtp-vurgu-kenar);
+        transition: background-color var(--mtp-duration) var(--mtp-ease-out);
+    }
+
+    .mtp-toplu__dugme:hover {
+        background: rgb(255 255 255 / 0.12);
+    }
+
+    .mtp-toplu__dugme:focus-visible {
+        outline-color: #ffffff;
+    }
+
+    .mtp-toplu__dugme.is-ikon {
+        @apply w-11 justify-center px-0;
+    }
+
+    .mtp-toplu__dugme.is-cizgisiz {
+        border-color: transparent;
+    }
+
+    .mtp-liste__durum {
+        @apply flex items-center justify-between gap-2 px-3.5 py-2.5 text-[0.84375rem];
+        color: var(--mtp-soluk);
+        border-bottom: 1px solid var(--mtp-cizgi);
+    }
+
+    .mtp-liste__durum p {
+        @apply m-0;
+    }
+
+    .mtp-sirala {
+        @apply inline-flex min-h-8 cursor-pointer items-center gap-1 rounded-md border-0 bg-transparent px-1;
+        color: var(--mtp-metin);
+    }
+
+    .mtp-sirala:hover {
+        text-decoration: underline;
+    }
+
+    .mtp-liste__govde {
+        transition: opacity var(--mtp-duration) var(--mtp-ease-out);
+    }
+
+    .mtp-satirlar {
+        @apply m-0 list-none p-0;
+    }
+
+    .mtp-satir {
+        @apply grid items-center gap-x-2 py-1.5 ps-3.5 pe-3.5;
+        grid-template-columns: minmax(0, 1fr) auto;
+        background: var(--mtp-yuzey);
+        border-bottom: 1px solid var(--mtp-cizgi);
+    }
+
+    .mtp-satir.has-kutu {
+        @apply ps-1;
+        grid-template-columns: 44px minmax(0, 1fr) auto;
+    }
+
+    .mtp-satir.is-isaretli {
+        background: var(--mtp-vurgu-soluk);
+    }
+
+    .mtp-satir.is-acik {
+        background: var(--mtp-vurgu-acik);
+        box-shadow: inset 0 0 0 2px var(--mtp-vurgu-cizgi);
+    }
+
+    .mtp-satir__kutu {
+        @apply flex h-11 cursor-pointer items-center justify-center;
+    }
+
+    .mtp-satir__kutu input {
+        @apply size-[17px] cursor-pointer;
+        accent-color: var(--mtp-vurgu-cizgi);
+    }
+
+    .mtp-satir__ana {
+        @apply min-w-0;
+    }
+
+    .mtp-satir__ad {
+        @apply block w-full cursor-pointer truncate border-0 bg-transparent p-0 py-0.5 text-start text-[0.9375rem] font-semibold;
+        color: var(--mtp-metin);
+    }
+
+    .mtp-satir__ad:hover {
+        text-decoration: underline;
+    }
+
+    .mtp-satir__meta {
+        @apply mt-0.5 flex items-center gap-1.5 text-[0.84375rem];
+        color: var(--mtp-soluk);
+    }
+
+    .mtp-satir__meta span {
+        @apply truncate;
+    }
+
+    .mtp-satir__meta svg {
+        @apply shrink-0;
+    }
+
+    .mtp-satir__meta .mtp-map__daire {
+        stroke: var(--mtp-metin);
+        stroke-width: 1;
+    }
+
+    .mtp-satir__sag {
+        @apply text-end text-sm whitespace-nowrap;
+    }
+
+    .mtp-satir__odeme {
+        @apply text-[0.8125rem];
+        color: var(--mtp-soluk);
+    }
+
+    .mtp-satir__odeme.is-vurgu {
+        @apply font-semibold;
+        color: var(--mtp-metin);
+    }
+
+    .mtp-liste__daha {
+        @apply flex justify-center px-3.5 py-3;
+    }
+
+    .mtp-bos {
+        @apply grid justify-items-start gap-1.5 px-[18px] py-7;
+    }
+
+    .mtp-bos__baslik {
+        @apply m-0 text-[0.9375rem] font-semibold;
+    }
+
+    .mtp-bos__metin {
+        @apply m-0 max-w-[60ch] text-sm;
+        color: var(--mtp-soluk);
+    }
+
+    .mtp-bos__eylemler {
+        @apply mt-2 flex flex-wrap gap-2;
+    }
+
+    /* ---------- İçe aktarım ve denetim (mevcut bileşenler) ---------- */
 
     /* İçe aktarım adımları: gerçek bir sıra olduğu için numaralı. */
     .mtp-steps {
@@ -152,7 +933,8 @@
     }
 
     .mtp-figures dd {
-        @apply mt-1 text-2xl font-semibold tracking-tight text-gray-950 dark:text-white;
+        @apply mt-1 text-2xl font-medium tracking-tight text-gray-950 dark:text-white;
+        font-family: var(--font-mono);
         font-variant-numeric: tabular-nums;
     }
 
@@ -170,7 +952,8 @@
     }
 
     .mtp-table-wrap:focus-visible {
-        @apply outline-2 outline-offset-2 outline-primary-600;
+        @apply outline-2 outline-offset-2;
+        outline-color: var(--mtp-vurgu-cizgi);
     }
 
     .mtp-table {
@@ -195,6 +978,7 @@
 
     .mtp-table .is-num {
         @apply text-end whitespace-nowrap;
+        font-family: var(--font-mono);
         font-variant-numeric: tabular-nums;
     }
 
@@ -217,7 +1001,8 @@
 
     .mtp-timeline__item::before {
         content: '';
-        @apply absolute -start-[5px] top-1.5 size-2.5 rounded-full bg-white ring-2 ring-primary-600 dark:bg-gray-900 dark:ring-primary-400;
+        @apply absolute -start-[5px] top-1.5 size-2.5 rounded-full bg-white ring-2 dark:bg-gray-900;
+        --tw-ring-color: var(--mtp-vurgu-cizgi);
     }
 
     .mtp-timeline__head {

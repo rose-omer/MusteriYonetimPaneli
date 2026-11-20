@@ -48,7 +48,7 @@ class ImportCustomers extends Page
 
     protected static ?string $title = 'Müşteri listesini içe aktar';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     protected string $view = 'filament.pages.import-customers';
 

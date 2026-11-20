@@ -52,6 +52,15 @@ final class TurkishFormat
     }
 
     /**
+     * Görüntülemek için tek para biçimi: "213.800 ₺" (toplam) ya da "37.833,21 ₺" (kayıt tutarı).
+     * Kural (DESIGN.md): tek kayıt tutarı ve tablo sütunu 2 ondalık, özet ve toplamlar ondalıksız.
+     */
+    public static function tl(float|int|string|null $tutar, int $ondalik = 0): string
+    {
+        return number_format((float) $tutar, $ondalik, ',', '.')."\u{00A0}₺";
+    }
+
+    /**
      * "15.03.2025", "15/03/2025", "2025-03-15" ya da Excel seri sayısı → "2025-03-15".
      */
     public static function date(mixed $value): ?string

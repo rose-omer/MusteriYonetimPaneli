@@ -1,7 +1,7 @@
 <x-filament-panels::page>
     @php
         $steps = [1 => 'Dosya seç', 2 => 'Önizle', 3 => 'Sonuç'];
-        $money = fn ($value) => is_numeric($value) ? \Illuminate\Support\Number::currency((float) $value, in: 'TRY', locale: 'tr') : $value;
+        $money = fn ($value) => is_numeric($value) ? \App\Support\TurkishFormat::tl($value, 2) : $value;
     @endphp
 
     <nav aria-label="İçe aktarım adımları">

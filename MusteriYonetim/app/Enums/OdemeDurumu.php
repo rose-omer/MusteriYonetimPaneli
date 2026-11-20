@@ -36,9 +36,9 @@ enum OdemeDurumu: string implements HasColor, HasLabel
     public function getColor(): string
     {
         return match ($this) {
-            self::Odenmis => 'success',
-            self::KismiOdenmis => 'warning',
-            self::Odenmemis => 'danger',
+            self::Odenmis => 'gray',
+            self::KismiOdenmis => 'primary',
+            self::Odenmemis => 'vurgu',
         };
     }
 

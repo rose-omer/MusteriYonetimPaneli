@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Enums\OdemeDurumu;
 use App\Filament\Resources\Customers\CustomerResource;
 use App\Models\Customer;
+use App\Support\TurkishFormat;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -53,9 +54,9 @@ class CustomerStatsOverview extends StatsOverviewWidget
                 ->description('Bütün kayıtlı firmalar')
                 ->icon(Heroicon::OutlinedBuildingOffice2)
                 ->url(CustomerResource::getUrl('index')),
-            Stat::make('Ödenmemiş tutar', Number::currency($acikTutar, in: 'TRY', locale: 'tr', precision: 0))
+            Stat::make('Ödenmemiş tutar', TurkishFormat::tl($acikTutar))
                 ->description($acikSayisi.' firmada ödeme bekliyor')
-                ->descriptionColor($acikSayisi > 0 ? 'danger' : 'gray')
+                ->descriptionColor($acikSayisi > 0 ? 'vurgu' : 'gray')
                 ->icon(Heroicon::OutlinedBanknotes)
                 ->url(CustomerResource::getUrl('index', ['filters' => ['odeme_durumu' => ['values' => $acik]]])),
             Stat::make('Bu ay eklenen', Number::format($buAy, locale: 'tr'))
@@ -64,7 +65,7 @@ class CustomerStatsOverview extends StatsOverviewWidget
                 ->url(CustomerResource::getUrl('index', ['sort' => 'created_at:desc'])),
             Stat::make('Sözleşmesi onaysız', Number::format($onaysiz, locale: 'tr'))
                 ->description($onaysiz > 0 ? 'Onay bekleyen firmalar' : 'Bütün sözleşmeler onaylı')
-                ->descriptionColor($onaysiz > 0 ? 'warning' : 'success')
+                ->descriptionColor($onaysiz > 0 ? 'vurgu' : 'gray')
                 ->icon(Heroicon::OutlinedDocumentCheck)
                 ->url(CustomerResource::getUrl('index', ['filters' => ['sozlesme_onay_durumu' => ['value' => '0']]])),
         ];

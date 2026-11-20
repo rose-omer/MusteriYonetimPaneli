@@ -60,8 +60,8 @@ class IlChart extends ChartWidget
                     'borderRadius' => 4,
                     'borderWidth' => 0,
                     // primary-500: beyaz ve koyu yüzeyde 3:1 üstü.
-                    'backgroundColor' => '#1f7e94',
-                    'hoverBackgroundColor' => '#0f6d82',
+                    'backgroundColor' => '#427485',
+                    'hoverBackgroundColor' => '#5e95a6',
                     'maxBarThickness' => 16,
                 ],
             ],

@@ -9,6 +9,7 @@ use App\Exports\CustomersExport;
 use App\Filament\Pages\ImportCustomers;
 use App\Filament\Resources\Customers\CustomerResource;
 use App\Models\Customer;
+use App\Support\TurkishFormat;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -24,6 +25,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Grid;
 use Filament\Support\Contracts\HasLabel;
+use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -39,6 +41,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\HtmlString;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CustomersTable
@@ -114,13 +117,17 @@ class CustomersTable
                 ->searchable(['hizmet_alan_isyeri_unvani', 'gorunur_unvani'])
                 ->sortable()
                 ->weight(FontWeight::SemiBold)
-                ->description(fn (Customer $record) => $record->firma_no ? 'No '.$record->firma_no : null)
+                ->description(fn (Customer $record) => $record->firma_no
+                    ? new HtmlString('No <span class="mtp-num">'.e($record->firma_no).'</span>')
+                    : null)
                 ->wrap()
                 ->extraHeaderAttributes(['class' => 'md:min-w-52 2xl:min-w-64']),
             TextColumn::make('firma_no')
                 ->label('Firma no')
                 ->searchable()
                 ->sortable()
+                ->fontFamily(FontFamily::Mono)
+                ->extraAttributes(['class' => 'tabular-nums'])
                 ->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('faaliyet.isim')
                 ->label('Faaliyet')
@@ -142,16 +149,18 @@ class CustomersTable
                 ->label('Telefon')
                 ->searchable(fn () => CustomerResource::currentUserSeesFullPhone())
                 ->formatStateUsing(fn (?string $state) => CustomerResource::phoneForCurrentUser($state))
+                ->fontFamily(FontFamily::Mono)
                 ->extraAttributes(['class' => 'tabular-nums whitespace-nowrap'])
                 ->toggleable()
                 ->visibleFrom('lg'),
             TextColumn::make('tutar')
                 ->label('Tutar')
-                ->money('TRY', locale: 'tr')
+                ->formatStateUsing(fn ($state) => TurkishFormat::tl($state, 2))
                 ->alignEnd()
                 ->sortable()
-                ->extraAttributes(['class' => 'tabular-nums'])
-                ->summarize(Sum::make()->label('Toplam')->money('TRY', locale: 'tr'))
+                ->fontFamily(FontFamily::Mono)
+                ->extraAttributes(['class' => 'tabular-nums whitespace-nowrap'])
+                ->summarize(Sum::make()->label('Toplam')->formatStateUsing(fn ($state) => TurkishFormat::tl($state, 2)))
                 ->toggleable()
                 ->visibleFrom('md'),
             TextColumn::make('odeme_durumu')
@@ -166,12 +175,14 @@ class CustomersTable
                 ->label('Sözleşme')
                 ->badge()
                 ->formatStateUsing(fn (bool $state) => $state ? 'Onaylı' : 'Onaysız')
-                ->color(fn (bool $state) => $state ? 'success' : 'warning')
+                ->color(fn (bool $state) => $state ? 'gray' : 'vurgu')
                 ->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('firma_ziyareti')
                 ->label('Son ziyaret')
                 ->date('d.m.Y')
                 ->sortable()
+                ->fontFamily(FontFamily::Mono)
+                ->extraAttributes(['class' => 'tabular-nums'])
                 ->toggleable(isToggledHiddenByDefault: true),
             TextColumn::make('created_at')
                 ->label('Eklenme')
@@ -228,10 +239,10 @@ class CustomersTable
                 ->indicateUsing(function (array $data): array {
                     $indicators = [];
                     if (filled($data['min'] ?? null)) {
-                        $indicators[] = Indicator::make('Tutar ≥ '.number_format((float) $data['min'], 0, ',', '.').' ₺')->removeField('min');
+                        $indicators[] = Indicator::make('Tutar ≥ '.TurkishFormat::tl($data['min']))->removeField('min');
                     }
                     if (filled($data['max'] ?? null)) {
-                        $indicators[] = Indicator::make('Tutar ≤ '.number_format((float) $data['max'], 0, ',', '.').' ₺')->removeField('max');
+                        $indicators[] = Indicator::make('Tutar ≤ '.TurkishFormat::tl($data['max']))->removeField('max');
                     }
 
                     return $indicators;
@@ -280,12 +291,7 @@ class CustomersTable
                 Select::make('value')->label('Yeni durum')->options($enum)->required(),
             ])
             ->action(function (Collection $records, array $data) use ($field) {
-                // Model olayları çalışsın diye tek tek güncellenir; denetim kaydı her kayıt için yazılır.
-                foreach ($records as $customer) {
-                    if ($customer instanceof Customer && Gate::allows('update', $customer)) {
-                        $customer->update([$field => $data['value']]);
-                    }
-                }
+                self::updateStatus($records, $field, $data['value']);
 
                 Notification::make()
                     ->title($records->count().' müşteri güncellendi')
@@ -293,6 +299,27 @@ class CustomersTable
                     ->send();
             })
             ->deselectRecordsAfterCompletion();
+    }
+
+    /**
+     * Seçilen kayıtlarda bir durum alanını değiştirir. Liste ve harita ekranı aynı kuralı kullanır.
+     * Model olayları çalışsın diye tek tek güncellenir; denetim kaydı her kayıt için yazılır.
+     *
+     * @param  iterable<mixed>  $records
+     * @return int Güncellenen kayıt sayısı
+     */
+    public static function updateStatus(iterable $records, string $field, mixed $value): int
+    {
+        $count = 0;
+
+        foreach ($records as $customer) {
+            if ($customer instanceof Customer && Gate::allows('update', $customer)) {
+                $customer->update([$field => $value]);
+                $count++;
+            }
+        }
+
+        return $count;
     }
 
     private static function isFiltered(Table $table): bool

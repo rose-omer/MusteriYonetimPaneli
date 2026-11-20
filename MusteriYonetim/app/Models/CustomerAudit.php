@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Number;
 
 /**
  * Müşteri kaydına yapılan işlemlerin erişim kaydı (KVKK).
@@ -124,7 +123,7 @@ class CustomerAudit extends Model
                     return Faaliyet::find($value)->isim ?? "#{$value}";
                 }
                 if ($field === 'tutar' && is_numeric($value)) {
-                    return Number::currency((float) $value, in: 'TRY', locale: 'tr');
+                    return TurkishFormat::tl($value, 2);
                 }
                 if ($field === 'sozlesme_onay_durumu') {
                     return $value ? 'Onaylandı' : 'Onaylanmadı';

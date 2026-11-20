@@ -31,8 +31,8 @@ enum FaturaDurumu: string implements HasColor, HasLabel
     public function getColor(): string
     {
         return match ($this) {
-            self::Kesildi, self::TeslimEdildi => 'success',
-            self::Kesilmedi, self::TeslimEdilecek => 'warning',
+            self::Kesildi, self::TeslimEdildi => 'gray',
+            self::Kesilmedi, self::TeslimEdilecek => 'vurgu',
             self::Iptal => 'gray',
         };
     }

@@ -59,3 +59,9 @@ it('eski seçenek metinlerini enum değerine çevirir', function () {
         ->and(FaturaDurumu::fromLabel('İPTAL'))->toBe(FaturaDurumu::Iptal)
         ->and(OdemeDurumu::fromLabel('belki'))->toBeNull();
 });
+
+it('tutarı tek biçimde gösterir: sonda bölünmez boşluk ve ₺', function () {
+    expect(TurkishFormat::tl(213800))->toBe("213.800\u{00A0}₺")
+        ->and(TurkishFormat::tl('37833.21', 2))->toBe("37.833,21\u{00A0}₺")
+        ->and(TurkishFormat::tl(null))->toBe("0\u{00A0}₺");
+});
