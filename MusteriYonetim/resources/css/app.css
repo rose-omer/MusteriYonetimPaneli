@@ -1,4 +1,30 @@
-/* resources/css/app.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Panel dışı sayfalar (hata sayfaları). Panelle aynı tokenler: petrol mavisi + slate. */
+@import 'tailwindcss' source(none);
+@import '@fontsource-variable/ibm-plex-sans/wght.css';
+
+@source '../views/errors/**/*.blade.php';
+
+@theme {
+    --font-sans: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
+    --color-brand-50: oklch(0.97 0.015 220);
+    --color-brand-600: #0f6d82;
+    --color-brand-700: #07596b;
+    --color-brand-300: #8fc6d6;
+}
+
+@custom-variant dark (@media (prefers-color-scheme: dark));
+
+@layer base {
+    ::selection {
+        background-color: color-mix(in oklab, var(--color-brand-600) 25%, transparent);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+        }
+    }
+}

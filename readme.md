@@ -1,120 +1,105 @@
-# Emar CRM Projesi
+# Müşteri Yönetim Paneli
 
-## 📌 Proje Tanımı
-Bu proje, **Emar** şirketinin mevcut CRM (Müşteri İlişkileri Yönetimi) sisteminin arayüzünü tamamen yenilemek ve modernleştirmek amacıyla geliştirilmiştir.  
-Şirket içi süreçleri optimize etmek, müşteri ve faaliyet kayıtlarını daha etkin bir şekilde yönetmek için tasarlanmıştır.  
-Uygulama, kullanıcı dostu ve güncel bir arayüze sahip olup, operasyonel verimliliği artırmayı hedeflemektedir.
+İş sağlığı ve güvenliği hizmeti veren bir firmanın müşteri listesini yöneten panel. Firmaları tehlike sınıfı, fatura ve ödeme durumu, saha ziyareti ile birlikte tutar. Yetkiyi rol tabanlı Policy'ler belirler. Excel listesi önizlenerek içe aktarılır; her değişiklik denetim kaydına yazılır. Staj projesi olarak başladı; bu sürümde yalnız sahte (demo) veri bulunur.
 
-## 🚀 Özellikler
+[![CI](https://github.com/rose-omer/MusteriYonetimPaneli/actions/workflows/ci.yml/badge.svg)](https://github.com/rose-omer/MusteriYonetimPaneli/actions/workflows/ci.yml)
+![PHP 8.4+](https://img.shields.io/badge/PHP-8.4%2B-777bb4)
+![Laravel 13](https://img.shields.io/badge/Laravel-13-ff2d20)
+![Filament 5](https://img.shields.io/badge/Filament-5-f59e0b)
 
-### 🔷 Modern ve Kullanıcı Dostu Arayüz
-- Laravel Blade ve Tailwind CSS ile oluşturulmuş şık ve sezgisel arayüz.
-- Yeni kurumsal kimliğe uygun tasarım.
-  
-### 👤 Müşteri Yönetimi
-- **Müşteri Kaydı:** Yeni müşterileri sisteme ekleme (ad, soyad, iletişim vb.).
-- **Listeleme & Arama:** Tüm müşterileri görüntüleme ve filtreleme.
-- **Detaylar:** Müşteriye özel bilgi ekranı.
-- **Güncelleme & Silme:** Mevcut kayıtları düzenleme veya silme.
+## Ekran görüntüleri
 
-### 📅 Faaliyet (Etkinlik) Yönetimi
-- **Faaliyet Ekleme:** Görüşme, toplantı, telefon gibi tüm faaliyet türlerini kayıt altına alma.
-- **Filtreleme:** Müşteri ya da tarih bazlı faaliyet görüntüleme.
-- **Detaylar & Notlar:** Her faaliyet için özel not alanı.
+| Gösterge paneli | Müşteri listesi |
+|---|---|
+| ![Gösterge paneli](MusteriYonetim/docs/ekran/gosterge-paneli.jpg) | ![Müşteri listesi](MusteriYonetim/docs/ekran/musteri-listesi.jpg) |
+| **Müşteri geçmişi** | **İçe aktarım** |
+| ![Denetim geçmişi](MusteriYonetim/docs/ekran/musteri-gecmis.jpg) | ![İçe aktarım](MusteriYonetim/docs/ekran/ice-aktarim.jpg) |
 
-### 🔐 Güvenlik
-- Laravel Breeze ile kimlik doğrulama ve yetkilendirme.
-- Şifreler hash’lenerek saklanır.
-  
-### 🛠️ Gelişmiş Özellikler
-- SQL veritabanı entegrasyonu.
-- Form validasyonları.
-- Veri bütünlüğü ve tutarlılığı.
+## Özellikler
 
-## 🧰 Kullanılan Teknolojiler
+- Müşteri listesi: unvan, firma no ve telefonda arama; il, faaliyet, tehlike sınıfı, fatura, ödeme, sözleşme, tutar aralığı ve ziyaret tarihi filtreleri.
+- Toplu işlemler: ödeme durumu ve fatura durumu değiştirme, seçilenleri Excel'e aktarma, silme.
+- Gösterge paneli: toplam müşteri, ödenmemiş tutar, bu ay eklenen, sözleşmesi onaysız firma; tehlike sınıfı ve il dağılımı; gecikmiş ödemeler. Her kart ilgili filtreyle listeye gider.
+- Excel içe aktarımı (3 adım): dosya seçimi, ilk 20 satırın önizlemesi ve hata sayısı, sonuç özeti. `firma_no` ile upsert; "1.250,50" ve "15.03.2025" gibi Türkçe biçimler çözülür; hatalı satırlar satır numarasıyla listelenir ve indirilebilir.
+- KVKK: izleyici rolü telefonu maskeli görür (`0532 *** ** 67`). Ekleme, güncelleme, silme ve içe aktarım `customer_audits` tablosuna yazılır. Silinen müşteri 90 gün sonra `model:prune` ile kalıcı silinir.
+- Kayıt kapalı. Yönetici kullanıcı ekler ve davet e-postası gönderir.
+- Türkçe arayüz, açık/koyu tema, mobil uyum, klavye ile kullanım.
 
-| Teknoloji        | Açıklama                                 |
-|------------------|------------------------------------------|
-| Laravel          | PHP tabanlı güçlü web framework          |
-| PHP              | Sunucu taraflı programlama dili          |
-| MySQL/PostgreSQL | İlişkisel veritabanı yönetimi            |
-| Tailwind CSS     | Utility-first modern CSS framework       |
-| Blade            | Laravel’in esnek şablon motoru           |
-| Alpine.js        | Laravel Breeze ile gelen hafif JS yapısı |
+## Mimari
 
-### Ekran Görüntüsü
-![login](https://github.com/user-attachments/assets/f6929bc0-4e56-43f8-8350-30424c76b930)
+| Katman | Kullanılan |
+|---|---|
+| Çatı | Laravel 13, PHP 8.4+ |
+| Panel | Filament 5 (Livewire 4, Tailwind CSS 4) |
+| Excel | Laravel Excel 4 (PhpSpreadsheet 5) |
+| Test | Pest 5, Larastan (seviye 6), Pint |
+| Veritabanı | SQLite (demo); MySQL/PostgreSQL ile de çalışır |
 
-![Kayıt 2025-07-30 171952](https://github.com/user-attachments/assets/697df4a7-40c0-4be3-89cb-ced600113c2c)
+Uygulama `MusteriYonetim/` klasöründedir. Önemli dosyalar:
 
-## ⚙️ Kurulum
+- `app/Policies/CustomerPolicy.php`: yetki matrisi.
+- `app/Enums/`: rol, tehlike sınıfı, fatura tipi, fatura durumu, ödeme durumu.
+- `app/Filament/Resources/Customers/`: müşteri formu, tablosu ve detay ekranı.
+- `app/Imports/CustomerRowMapper.php`: Excel sütunları, doğrulama kuralları, Türkçe biçim çözümü.
+- `app/Filament/Pages/ImportCustomers.php`: içe aktarım akışı.
+- `DESIGN.md`: renk, tip ve bileşen kuralları.
 
-### 1. Depoyu Klonlayın
+## Rol ve yetki matrisi
+
+| İşlem | Yönetici | Düzenleyici | İzleyici |
+|---|:---:|:---:|:---:|
+| Müşteri listesi ve detay | Evet | Evet | Evet |
+| Telefonu tam görme | Evet | Evet | Hayır (maskeli) |
+| Müşteri ekleme ve düzenleme | Evet | Evet | Hayır |
+| Toplu durum değişikliği, Excel'e aktarma | Evet | Evet | Hayır |
+| Müşteri silme ve geri alma | Evet | Hayır | Hayır |
+| Excel'den içe aktarma | Evet | Hayır | Hayır |
+| Faaliyet ve kullanıcı yönetimi | Evet | Hayır | Hayır |
+
+## Kurulum
+
+Gerekenler: PHP 8.4+ (`intl`, `zip`, `gd`, `pdo_sqlite`), Composer 2, Node.js 20.19+.
+
 ```bash
-git clone https://github.com/KULLANICI_ADINIZ/Emar-CRM.git
-cd Emar-CRM
-```
-
-### 2. Composer Kurulumu
-```bash
-
+cd MusteriYonetim
 composer install
-```
-### 3. .env Dosyasını Oluşturun
-```bash
-
 cp .env.example .env
-```
-### 4. Uygulama Anahtarını Oluşturun
-```bash
-
 php artisan key:generate
+touch database/database.sqlite        # Windows: New-Item database\database.sqlite
+php artisan migrate --seed
+npm ci && npm run build
+php artisan serve --port=8100
 ```
 
-### 5. Veritabanını Ayarlayın
+Panel: <http://localhost:8100/admin>
+
+Demo hesapları (parola `password`, yalnız yerel kullanım içindir):
+
+| E-posta | Rol |
+|---|---|
+| `admin@demo.test` | Yönetici |
+| `editor@demo.test` | Düzenleyici |
+| `izleyici@demo.test` | İzleyici |
+
+`APP_ENV=demo` iken giriş kutusunun altında izleyici hesabı notu görünür.
+
+Örnek içe aktarım dosyası: `MusteriYonetim/docs/ornek-musteri-listesi.xlsx` (panelde "Örnek şablonu indir" bağlantısı da aynı dosyayı üretir).
+
+Kalıcı silme için zamanlayıcıyı çalıştırın: `php artisan schedule:work` (ya da cron ile `schedule:run`).
+
+## Test ve kalite
+
 ```bash
-
-.env dosyasını açıp bilgileri güncelleyin:
-```
-```bash
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=emar_crm
-DB_USERNAME=root
-DB_PASSWORD=
+cd MusteriYonetim
+php artisan test
+vendor/bin/pint --test
+vendor/bin/phpstan analyse --memory-limit=1G
+composer audit
 ```
 
-### 6. Veritabanı Tablolarını Oluşturun
-```bash
+GitHub Actions (`.github/workflows/ci.yml`) aynı adımları PHP 8.5 ile çalıştırır ve ön yüzü derler.
 
-php artisan migrate
-```
+## Açık sorular
 
-### 7. NPM Kurulumu ve Derleme
-```bash
-
-npm install
-npm run dev   # Geliştirme için
-```
-
-# veya üretim için:
-# npm run build
-### 8. Sunucuyu Başlatın
-```bash
-
-php artisan serve
-Tarayıcıdan şu adrese gidin: http://127.0.0.1:8000
-```
-### 🧪 Kullanım
-
-- Kayıt Olun: http://127.0.0.1:8000/register
-
-- Giriş Yapın: http://127.0.0.1:8000/login
-
-- Müşteri İşlemleri: Müşteri ekle, güncelle, sil.
-
-- Faaliyet Yönetimi: Müşteriyle ilgili tüm etkileşimleri kaydedin.
-
-
+- Fatura tipi ve fatura durumu için eski ekranlar iki farklı liste kullanıyordu (`AYLIK/YILLIK/HAFTALIK` ve `W30/W45/HAZIRLANACAK`). Veri kaybı olmasın diye ikisi birleştirildi; doğru liste iş sahibine sorulmalı.
+- Canlı bir kurulum varsa veri göçleri (enum, boolean, tarih, `faaliyet_id`) önce yedekte denenmeli. Tanınmayan değerler boşaltılır ve günlüğe yazılır.

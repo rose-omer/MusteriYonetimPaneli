@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Number;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Tarih ve sayı biçimi uygulama diline uyar (varsayılan: tr).
+        Carbon::setLocale(config('app.locale'));
+        Number::useLocale(config('app.locale'));
     }
 }

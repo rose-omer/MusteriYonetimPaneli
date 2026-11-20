@@ -1,0 +1,282 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import '@fontsource-variable/ibm-plex-sans/wght.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+/*
+ * Müşteri Yönetim Paneli — tema katmanı
+ * Renk tokenleri panelde tanımlı (AdminPanelProvider::colors): primary = petrol mavisi,
+ * gray = slate. Burada yalnız tip, tarayıcı yüzeyleri ve özel bileşenler var.
+ * Ayrıntı: DESIGN.md
+ */
+
+@layer base {
+    :root {
+        --mtp-radius-sm: 0.375rem;
+        --mtp-radius: 0.5rem;
+        --mtp-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+        --mtp-duration: 160ms;
+    }
+
+    html {
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        font-feature-settings: 'kern', 'liga';
+        scrollbar-color: var(--gray-300) transparent;
+    }
+
+    html.dark {
+        scrollbar-color: var(--gray-700) transparent;
+    }
+
+    ::selection {
+        background-color: color-mix(in oklab, var(--primary-500) 28%, transparent);
+        color: inherit;
+    }
+
+    input,
+    textarea {
+        caret-color: var(--primary-600);
+    }
+
+    a {
+        text-underline-offset: 0.2em;
+    }
+
+    /* Sayısal veri hizalı okunur. */
+    .tabular-nums,
+    .fi-wi-stats-overview-stat-value,
+    .fi-ta-summary-row,
+    .fi-pagination {
+        font-variant-numeric: tabular-nums;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+@layer components {
+    /* Başlıklar: dar tracking, net ağırlık basamakları. */
+    .fi-header-heading {
+        letter-spacing: -0.018em;
+        text-wrap: balance;
+    }
+
+    .fi-section-header-heading {
+        letter-spacing: -0.006em;
+    }
+
+    .fi-wi-stats-overview-stat-value {
+        letter-spacing: -0.024em;
+    }
+
+    .fi-wi-stats-overview-stat {
+        transition: border-color var(--mtp-duration) var(--mtp-ease-out), box-shadow var(--mtp-duration) var(--mtp-ease-out);
+    }
+
+    a.fi-wi-stats-overview-stat:hover {
+        @apply ring-primary-600/40 dark:ring-primary-400/40;
+    }
+
+    /* İçe aktarım adımları: gerçek bir sıra olduğu için numaralı. */
+    .mtp-steps {
+        @apply flex flex-wrap items-center gap-x-6 gap-y-3 text-sm;
+        counter-reset: none;
+    }
+
+    .mtp-steps__item {
+        @apply flex items-center gap-2 text-gray-500 dark:text-gray-400;
+    }
+
+    .mtp-steps__item + .mtp-steps__item::before {
+        content: '';
+        @apply me-4 hidden h-px w-8 bg-gray-300 sm:block dark:bg-gray-700;
+    }
+
+    .mtp-steps__marker {
+        @apply inline-flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ring-1 ring-gray-300 ring-inset dark:ring-gray-600;
+    }
+
+    .mtp-steps__item.is-current {
+        @apply font-semibold text-gray-950 dark:text-white;
+    }
+
+    .mtp-steps__item.is-current .mtp-steps__marker {
+        @apply bg-primary-600 text-white ring-primary-600 dark:bg-primary-500 dark:ring-primary-500;
+    }
+
+    .mtp-steps__item.is-done .mtp-steps__marker {
+        @apply bg-primary-50 text-primary-700 ring-primary-200 dark:bg-primary-500/15 dark:text-primary-300 dark:ring-primary-500/30;
+    }
+
+    .mtp-stack {
+        @apply grid gap-6;
+    }
+
+    .mtp-actions {
+        @apply mt-6 flex flex-wrap items-center justify-end gap-3;
+    }
+
+    .mtp-hint {
+        @apply grid justify-items-start gap-2 rounded-lg bg-gray-50 p-4 text-sm text-gray-600 ring-1 ring-gray-950/5 dark:bg-white/5 dark:text-gray-300 dark:ring-white/10;
+    }
+
+    .mtp-hint p {
+        max-width: 72ch;
+    }
+
+    .mtp-muted {
+        @apply mt-3 text-sm text-gray-500 dark:text-gray-400;
+    }
+
+    /* Önizleme ve sonuç sayıları. */
+    .mtp-figures {
+        @apply mb-6 grid grid-cols-1 gap-px overflow-hidden rounded-lg bg-gray-950/5 ring-1 ring-gray-950/5 sm:grid-cols-3 dark:bg-white/10 dark:ring-white/10;
+    }
+
+    .mtp-figures > div {
+        @apply bg-white px-4 py-3 dark:bg-gray-900;
+    }
+
+    .mtp-figures dt {
+        @apply text-sm text-gray-500 dark:text-gray-400;
+    }
+
+    .mtp-figures dd {
+        @apply mt-1 text-2xl font-semibold tracking-tight text-gray-950 dark:text-white;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .mtp-figures dd.is-success {
+        @apply text-success-700 dark:text-success-400;
+    }
+
+    .mtp-figures dd.is-danger {
+        @apply text-danger-700 dark:text-danger-400;
+    }
+
+    /* Önizleme tablosu: Filament tablo diliyle aynı yoğunluk. */
+    .mtp-table-wrap {
+        @apply overflow-x-auto rounded-lg ring-1 ring-gray-950/5 dark:ring-white/10;
+    }
+
+    .mtp-table-wrap:focus-visible {
+        @apply outline-2 outline-offset-2 outline-primary-600;
+    }
+
+    .mtp-table {
+        @apply w-full min-w-[40rem] divide-y divide-gray-200 text-start text-sm dark:divide-white/5;
+    }
+
+    .mtp-table th {
+        @apply bg-gray-50 px-3 py-2.5 text-start font-semibold text-gray-950 dark:bg-white/5 dark:text-white;
+    }
+
+    .mtp-table td {
+        @apply px-3 py-2.5 align-top text-gray-700 dark:text-gray-300;
+    }
+
+    .mtp-table tbody {
+        @apply divide-y divide-gray-200 dark:divide-white/5;
+    }
+
+    .mtp-table tr.has-error td {
+        @apply bg-danger-50/60 dark:bg-danger-500/5;
+    }
+
+    .mtp-table .is-num {
+        @apply text-end whitespace-nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .mtp-table .is-strong {
+        @apply font-medium text-gray-950 dark:text-white;
+    }
+
+    .mtp-errors {
+        @apply mt-1.5 grid gap-0.5 text-xs text-danger-700 dark:text-danger-400;
+    }
+
+    /* Denetim geçmişi. */
+    .mtp-timeline {
+        @apply grid gap-0;
+    }
+
+    .mtp-timeline__item {
+        @apply relative border-s border-gray-200 ps-5 pb-6 last:pb-0 dark:border-white/10;
+    }
+
+    .mtp-timeline__item::before {
+        content: '';
+        @apply absolute -start-[5px] top-1.5 size-2.5 rounded-full bg-white ring-2 ring-primary-600 dark:bg-gray-900 dark:ring-primary-400;
+    }
+
+    .mtp-timeline__head {
+        @apply flex flex-wrap items-baseline gap-x-1.5 text-sm;
+    }
+
+    .mtp-timeline__who {
+        @apply font-semibold text-gray-950 dark:text-white;
+    }
+
+    .mtp-timeline__what {
+        @apply text-gray-700 dark:text-gray-300;
+    }
+
+    .mtp-timeline__when {
+        @apply ms-auto text-xs text-gray-500 dark:text-gray-400;
+    }
+
+    .mtp-timeline__changes {
+        @apply mt-2 grid gap-1.5 text-sm;
+    }
+
+    .mtp-timeline__change {
+        @apply grid gap-x-3 sm:grid-cols-[10rem_1fr];
+    }
+
+    .mtp-timeline__change dt {
+        @apply text-gray-500 dark:text-gray-400;
+    }
+
+    .mtp-timeline__change dd {
+        @apply flex flex-wrap items-center gap-1.5 text-gray-950 dark:text-white;
+    }
+
+    .mtp-timeline__old {
+        @apply text-gray-500 line-through decoration-gray-400/70 dark:text-gray-400;
+    }
+
+    .mtp-timeline__arrow {
+        @apply text-gray-400 dark:text-gray-500;
+    }
+
+    .mtp-empty {
+        @apply grid justify-items-start gap-1 py-6;
+    }
+
+    .mtp-empty__title {
+        @apply text-sm font-semibold text-gray-950 dark:text-white;
+    }
+
+    .mtp-empty__text {
+        @apply max-w-prose text-sm text-gray-500 dark:text-gray-400;
+    }
+
+    .mtp-demo-note {
+        @apply mt-2 rounded-lg bg-gray-50 p-3 text-sm text-gray-600 ring-1 ring-gray-950/5 dark:bg-white/5 dark:text-gray-300 dark:ring-white/10;
+    }
+
+    .mtp-demo-note code {
+        @apply font-mono text-[0.8125rem] text-gray-950 dark:text-white;
+    }
+}

@@ -1,0 +1,60 @@
+<?php
+
+// Uygulamada kullanılan doğrulama kurallarının Türkçe iletileri.
+return [
+    'accepted' => ':attribute kabul edilmeli.',
+    'array' => ':attribute bir liste olmalı.',
+    'boolean' => ':attribute evet ya da hayır olmalı.',
+    'confirmed' => ':attribute doğrulaması eşleşmiyor.',
+    'current_password' => 'Parola yanlış.',
+    'date' => ':attribute geçerli bir tarih olmalı.',
+    'date_format' => ':attribute :format biçiminde olmalı.',
+    'email' => ':attribute geçerli bir e-posta adresi olmalı.',
+    'enum' => 'Seçilen :attribute geçersiz.',
+    'exists' => 'Seçilen :attribute bulunamadı.',
+    'extensions' => ':attribute şu uzantılardan biri olmalı: :values.',
+    'file' => ':attribute bir dosya olmalı.',
+    'image' => ':attribute bir görsel olmalı.',
+    'in' => 'Seçilen :attribute geçersiz.',
+    'integer' => ':attribute tam sayı olmalı.',
+    'max' => [
+        'array' => ':attribute en fazla :max öğe içerebilir.',
+        'file' => ':attribute en fazla :max KB olabilir.',
+        'numeric' => ':attribute en fazla :max olabilir.',
+        'string' => ':attribute en fazla :max karakter olabilir.',
+    ],
+    'mimes' => ':attribute şu türlerden biri olmalı: :values.',
+    'mimetypes' => ':attribute şu türlerden biri olmalı: :values.',
+    'min' => [
+        'array' => ':attribute en az :min öğe içermeli.',
+        'file' => ':attribute en az :min KB olmalı.',
+        'numeric' => ':attribute en az :min olmalı.',
+        'string' => ':attribute en az :min karakter olmalı.',
+    ],
+    'numeric' => ':attribute sayı olmalı.',
+    'password' => [
+        'letters' => ':attribute en az bir harf içermeli.',
+        'mixed' => ':attribute en az bir büyük ve bir küçük harf içermeli.',
+        'numbers' => ':attribute en az bir rakam içermeli.',
+        'symbols' => ':attribute en az bir sembol içermeli.',
+        'uncompromised' => 'Bu :attribute bir veri sızıntısında görülmüş. Başka bir parola seçin.',
+    ],
+    'regex' => ':attribute biçimi geçersiz.',
+    'required' => ':attribute zorunlu.',
+    'required_if' => ':other :value iken :attribute zorunlu.',
+    'same' => ':attribute ile :other aynı olmalı.',
+    'size' => [
+        'string' => ':attribute :size karakter olmalı.',
+    ],
+    'starts_with' => ':attribute şunlardan biriyle başlamalı: :values.',
+    'string' => ':attribute metin olmalı.',
+    'unique' => 'Bu :attribute zaten kayıtlı.',
+    'uploaded' => ':attribute yüklenemedi.',
+    'url' => ':attribute geçerli bir bağlantı olmalı.',
+
+    'attributes' => [
+        'email' => 'e-posta',
+        'password' => 'parola',
+        'name' => 'ad soyad',
+    ],
+];
