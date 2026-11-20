@@ -9,11 +9,19 @@
 
 ## Ekran görüntüleri
 
-| Gösterge paneli | Müşteri listesi |
+Görüntüler yerel demo hesabı ve seed verisiyle alındı. Firma adları ve tutarlar örnektir.
+
+| | |
 |---|---|
-| ![Gösterge paneli](MusteriYonetim/docs/ekran/gosterge-paneli.jpg) | ![Müşteri listesi](MusteriYonetim/docs/ekran/musteri-listesi.jpg) |
-| **Müşteri geçmişi** | **İçe aktarım** |
-| ![Denetim geçmişi](MusteriYonetim/docs/ekran/musteri-gecmis.jpg) | ![İçe aktarım](MusteriYonetim/docs/ekran/ice-aktarim.jpg) |
+| ![Giriş](MusteriYonetim/docs/ekran/0-giris.png)<br>Giriş | ![Gösterge paneli](MusteriYonetim/docs/ekran/1-gosterge-paneli.png)<br>Gösterge paneli |
+| ![Müşteri listesi](MusteriYonetim/docs/ekran/2-musteriler.png)<br>Müşteri listesi | ![Müşteri haritası](MusteriYonetim/docs/ekran/3-harita.png)<br>Müşteri haritası |
+| ![Excel içe aktarım](MusteriYonetim/docs/ekran/4-ice-aktar.png)<br>Excel içe aktarım | ![Faaliyetler](MusteriYonetim/docs/ekran/5-faaliyetler.png)<br>Faaliyetler |
+
+## Kullanım
+
+![Kullanım akışı](MusteriYonetim/docs/ekran/kullanim.gif)
+
+Harita ile liste aynı ekrandadır. Bir ile basınca liste o ile süzülür; firma seçilince künyesi açılır.
 
 ## Özellikler
 
