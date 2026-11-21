@@ -1,4 +1,40 @@
-/* resources/css/app.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Panel dışı sayfalar (hata sayfaları). Panelle aynı tokenler: mürekkep, mavi-gri nötr, erik vurgu. */
+@import 'tailwindcss' source(none);
+@import '@fontsource-variable/instrument-sans/wght.css';
+@import '@fontsource-variable/spline-sans-mono/wght.css';
+
+@source '../views/errors/**/*.blade.php';
+
+@theme {
+    --font-sans: 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Spline Sans Mono Variable', ui-monospace, monospace;
+    --color-brand-500: #466f82;
+    --color-brand-600: #17323e;
+    --color-brand-700: #0f242d;
+    --color-vurgu: #6e2a55;
+    --color-vurgu-acik: #c792b1;
+    --color-slate-50: #eef3f4;
+    --color-slate-300: #c3cfd4;
+    --color-slate-400: #8a9ca4;
+    --color-slate-500: #5e747e;
+    --color-slate-600: #4c6470;
+    --color-slate-950: #0b1920;
+}
+
+@custom-variant dark (@media (prefers-color-scheme: dark));
+
+@layer base {
+    ::selection {
+        background-color: #e6d2de;
+        color: #17323e;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+        }
+    }
+}

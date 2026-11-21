@@ -3,46 +3,82 @@
 namespace App\Imports;
 
 use App\Models\Customer;
+use Maatwebsite\Excel\Concerns\Importable;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithUpsertColumns;
+use Maatwebsite\Excel\Concerns\WithUpserts;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Concerns\WithStartRow;
-use Carbon\Carbon;
 
-class CustomersImport implements ToModel, WithHeadingRow, WithValidation, WithStartRow
+/**
+ * Müşteri listesini içe aktarır. Başlıklar 2. satırda, veri 3. satırdan başlar.
+ * Aynı firma_no ile gelen satır mevcut kaydı günceller (upsert); hatalı satır atlanır.
+ */
+class CustomersImport implements SkipsEmptyRows, SkipsOnFailure, ToModel, WithBatchInserts, WithChunkReading, WithHeadingRow, WithUpsertColumns, WithUpserts, WithValidation
 {
-    public function model(array $row)
-    {
-        
+    use Importable;
+    use SkipsFailures;
 
-        return new Customer([
-            'hizmet_alan_isyeri_unvani' => $row['hizmet_alan_isyeri_unvani'] ?? null,
-            'firma_no'                  => $row['firma_no'] ?? null,
-            'gorunur_unvani'            => $row['gorunur_unvani'] ?? null,
-            'faaliyet'                  => $row['faaliyet'] ?? null,
-            'calisan_sayisi'            => isset($row['hizmet_alan_isyeri_calisan_sayisi']) ? (int)$row['hizmet_alan_isyeri_calisan_sayisi'] : null,
-            'tehlike_sinifi'            => $row['hizmet_alan_isyeri_tehlike_sinifi'] ?? null,
-            'firma_sorumlusu'           => $row['firma_sorumlusu'] ?? null,
-            'telefon_numarasi'          => $row['yetkili_kisi_telefon_numarasi'] ?? null,
-            'il'                        => $row['hizmet_alan_isyeri_ili'] ?? null,
-            'mahalle'                   => $row['mahalle'] ?? null,
-            'konum_url'                 => $row['konum'] ?? null,
-            'fatura_tipi'               => $row['fatura_tipi'] ?? null,
-            'fatura_durumu'             => $row['fatura_durumu'] ?? null,
-            'tutar'                     => isset($row['tutar']) ? (float)$row['tutar'] : null,
-            'odeme_durumu'              => $row['odeme'] ?? null,
-            'sozlesme_onay_durumu'      => filter_var($row['sozlesme_onay_durumu'] ?? false, FILTER_VALIDATE_BOOLEAN),
-            'igu'                       => $row['igu'] ?? null,
-            'ih'                        => $row['ih'] ?? null,
-            'firma_ziyareti'            => null,
-            'defter'                    => $row['defter'] ?? null,
-            'ra'                        => $row['ra'] ?? null,
-        ]);
+    public const BATCH_SIZE = 500;
+
+    public int $inserted = 0;
+
+    public int $updated = 0;
+
+    /** @var array<string, true> Bu dosyada eklenen ya da güncellenen firma numaraları (denetim özeti). */
+    private array $touchedFirmaNo = [];
+
+    /** @var array<string, true> İçe aktarımdan önce var olan ve bu dosyada görülen firma numaraları. */
+    private array $knownFirmaNo;
+
+    public function __construct()
+    {
+        $this->knownFirmaNo = array_fill_keys(
+            Customer::withTrashed()->whereNotNull('firma_no')->pluck('firma_no')->all(),
+            true,
+        );
     }
 
-    public function startRow(): int
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    public function prepareForValidation(array $row, int $index): array
     {
-        return 3;
+        return CustomerRowMapper::map($row);
+    }
+
+    /** @param  array<string, mixed>  $row */
+    public function model(array $row): Customer
+    {
+        $firmaNo = $row['firma_no'];
+
+        if ($firmaNo !== null) {
+            $this->touchedFirmaNo[$firmaNo] = true;
+        }
+
+        if ($firmaNo !== null && isset($this->knownFirmaNo[$firmaNo])) {
+            $this->updated++;
+        } else {
+            $this->inserted++;
+            if ($firmaNo !== null) {
+                $this->knownFirmaNo[$firmaNo] = true;
+            }
+        }
+
+        $row['faaliyet_id'] = CustomerRowMapper::faaliyetId($row['faaliyet']);
+        unset($row['faaliyet']);
+
+        $customer = new Customer($row);
+        // Silinmiş bir firma yeniden içe aktarılırsa kayıt geri gelir.
+        $customer->setAttribute('deleted_at', null);
+
+        return $customer;
     }
 
     public function headingRow(): int
@@ -50,19 +86,53 @@ class CustomersImport implements ToModel, WithHeadingRow, WithValidation, WithSt
         return 2;
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
-        return [
-            'hizmet_alan_isyeri_unvani' => 'required|string|max:255',
-            'firma_no'                  => 'nullable|string|max:255',
-            // Diğer validasyonlar buraya eklenebilir
-        ];
+        return CustomerRowMapper::rules();
     }
 
-    public function customValidationMessages()
+    /** @return array<string, string> */
+    public function customValidationMessages(): array
     {
-        return [
-            'hizmet_alan_isyeri_unvani.required' => 'Hizmet Alan İşyeri Unvanı boş olamaz.',
-        ];
+        return CustomerRowMapper::messages();
+    }
+
+    /** @return array<string, string> */
+    public function customValidationAttributes(): array
+    {
+        return CustomerRowMapper::attributeLabels();
+    }
+
+    public function uniqueBy(): string
+    {
+        return 'firma_no';
+    }
+
+    /** @return list<string> created_at korunur; diğer bütün alanlar güncellenir. */
+    public function upsertColumns(): array
+    {
+        return [...(new Customer)->getFillable(), 'deleted_at', 'updated_at'];
+    }
+
+    public function batchSize(): int
+    {
+        return self::BATCH_SIZE;
+    }
+
+    public function chunkSize(): int
+    {
+        return self::BATCH_SIZE;
+    }
+
+    /** @return list<string> */
+    public function firmaNumbers(): array
+    {
+        return array_map('strval', array_keys($this->touchedFirmaNo));
+    }
+
+    public function skipped(): int
+    {
+        return $this->failures()->map->row()->unique()->count();
     }
 }
